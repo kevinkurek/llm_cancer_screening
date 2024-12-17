@@ -12,3 +12,9 @@ pub fn read_csv(file_path: &str) -> Result<DataFrame> {
         .finish()?;
     Ok(df)
 }
+
+pub fn extract_first_text_input(df: &DataFrame) -> Result<Option<String>> {
+    let text_input_series = df.column("Text_Input")?;
+    let first_text_input = text_input_series.utf8()?.get(0).map(|s| s.to_string());
+    Ok(first_text_input)
+}
