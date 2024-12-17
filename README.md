@@ -3,7 +3,13 @@
 
 ## Overview
 
-LLM Cancer Screening is a Rust-based application designed to analyze text data for indications of cancer. The application reads input from a CSV file, sends the text data to an API for analysis, and writes the results to an output CSV file. The project leverages Rust's safety and concurrency features to ensure reliable and efficient processing.
+LLM Cancer Screening is a Rust-based application designed to analyze text data for indications of cancer. The application reads input from a CSV file, sends the text data to an API for analysis, and writes the results to an output CSV file. The project leverages Rust's safety and concurrency features to ensure reliable and efficient processing. This project assumes usage of ChatGPT endpoints for now, but can be readily extended to any HuggingFace model, like this [clinical language model](https://huggingface.co/collections/hf4h/clinical-language-models-64f9c1cd0cedc04f3caca264), and likely get similar performance for a much cheaper price-point. Kevin (original author) paid the money out of his pocket to test the ChatGPT endpoint.
+
+## Example Output
+Non-uniform and messy input text. Can be from any type of provider: MA, Nurse, NP, PA, MD, etc. It's a free-text box where anything goes for their entire medical history. We can't assume any words indicate cancer in advance.
+![image](https://github.com/user-attachments/assets/287da87d-512b-4eb9-95ed-df8431164cfd)
+
+
 
 ## Features
 
