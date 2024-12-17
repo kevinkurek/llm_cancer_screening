@@ -8,12 +8,15 @@ pub fn start_mock_server() -> MockServer {
 
     server.mock(|when, then| {
         when.method(POST)
-            .path("/v1/engines/gpt-4/completions")
+            .path("/v1/chat/completions")
             .header("Authorization", "Bearer test_api_key");
         then.status(200)
             .json_body(json!({
                 "choices": [{
-                    "text": "This is a mock response."
+                    "message": {
+                        "role": "assistant",
+                        "content": "This is a mock response."
+                    }
                 }]
             }));
     });
