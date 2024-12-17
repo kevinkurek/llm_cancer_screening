@@ -1,5 +1,6 @@
 // filepath: /Users/kevinkurek/Desktop/github/llm_cancer_screening/src/main.rs
 use dotenv::dotenv;
+use futures::future::join_all;
 use llm_cancer_screening::api::call_api;
 use llm_cancer_screening::mock_server::start_mock_server;
 use llm_cancer_screening::csv_reader::{read_csv, extract_text_inputs, add_column_and_write_csv};
@@ -31,25 +32,31 @@ async fn main() {
     let mut df = read_csv(file_path).expect("Failed to read CSV");
     let text_inputs = extract_text_inputs(&df).expect("Failed to extract Text_Input column");
 
-    let mut results = Vec::new();
-    for text_input in text_inputs {
+    // Create a vector of futures for the API calls
+    let futures: Vec<_> = text_inputs.into_iter().map(|text_input| {
+        let api_url = api_url.clone();
+        let api_key = api_key.clone();
         let prompt = format!("Is there an indication of cancer in this text? Please answer with one word: True or False. {}", text_input);
+        tokio::spawn(async move {
+            match call_api(&api_url, &api_key, &prompt).await {
+                Ok(response) => {
+                    println!("Response: {}", response);
+                    // Parse the response to extract the "content" value
+                    let response_json: Value = serde_json::from_str(&response).expect("Failed to parse response");
+                    let content = response_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+                    Some(content)
+                },
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    None
+                },
+            }
+        })
+    }).collect();
 
-        match call_api(&api_url, &api_key, &prompt).await {
-            Ok(response) => {
-                println!("Response: {}", response);
-                // Parse the response to extract the "content" value
-                let response_json: Value = serde_json::from_str(&response).expect("Failed to parse response");
-                let content = response_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
-                results.push(Some(content));
-            },
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                results.push(None);
-            },
-        }
-    }
+    // Wait for all futures to complete
+    let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
 
     // Add the results to the new column and write to the output CSV
-    add_column_and_write_csv(&mut df, "Cancer_Detected", results, "output_test.csv").expect("Failed to write CSV");
+    add_column_and_write_csv(&mut df, "Cancer_Detected", results, "output.csv").expect("Failed to write CSV");
 }
