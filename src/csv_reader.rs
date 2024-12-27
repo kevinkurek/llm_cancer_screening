@@ -27,7 +27,7 @@ pub fn extract_text_inputs(df: &DataFrame) -> PolarsResult<Vec<String>> {
             .into_iter() // Get an iterator over the column values
             .map(|opt_name| opt_name.unwrap_or("").to_string()) // Handle Option<&str> and convert to String
             .collect(); // Collect the iterator into a Vec<String>
-    println!("{:?}", text_inputs);
+    // println!("{:?}", text_inputs);
 
     Ok(text_inputs)
 }

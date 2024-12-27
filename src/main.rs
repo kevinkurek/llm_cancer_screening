@@ -5,6 +5,7 @@ use llm_cancer_screening::api::call_api;
 use llm_cancer_screening::mock_server::start_mock_server;
 use llm_cancer_screening::csv_reader::{read_csv, extract_text_inputs, add_column_and_write_csv};
 use std::env;
+use std::sync::Arc;
 use serde_json::Value;
 
 #[tokio::main]
@@ -29,6 +30,10 @@ async fn main() {
         (api_url, api_key)
     };
 
+    // wrap api_url and api_key in Arc to share across threads
+    let api_url = Arc::new(api_url);
+    let api_key = Arc::new(api_key);
+
     // Use a relative path for the CSV file
     let mut df = read_csv(FILE_PATH).expect("Failed to read CSV");
     let text_inputs = extract_text_inputs(&df).expect("Failed to extract Text_Input column");
@@ -36,8 +41,8 @@ async fn main() {
 
     // Create a vector of futures for the API calls
     let futures: Vec<_> = text_inputs.into_iter().map(|text_input| {
-        let api_url = api_url.clone();
-        let api_key = api_key.clone();
+        let api_url = Arc::clone(&api_url);
+        let api_key = Arc::clone(&api_key);
         let prompt = format!("Is there an indication of cancer in this text? Please answer with one word: True or False. {}", text_input);
         tokio::spawn(async move {
             match call_api(&api_url, &api_key, &prompt).await {
