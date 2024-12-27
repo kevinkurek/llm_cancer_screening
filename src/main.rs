@@ -11,10 +11,12 @@ use serde_json::Value;
 async fn main() {
     dotenv().ok();
 
-    // let use_mock_server = env::var("USE_MOCK_SERVER").unwrap_or_else(|_| "false".to_string()) == "true";
+    // define file_path constant
+    const FILE_PATH: &str = "tests/data/cancer_10_records.csv";
+    const OUTPUT_PATH: &str = "output.csv";
     let use_mock_server = false; // Set to false to use the real API
 
-
+    // Define the API URL and API key
     let (api_url, api_key) = if use_mock_server {
         // Start the mock server
         let server = start_mock_server();
@@ -28,9 +30,9 @@ async fn main() {
     };
 
     // Use a relative path for the CSV file
-    let file_path = "tests/data/cancer_10_records.csv";
-    let mut df = read_csv(file_path).expect("Failed to read CSV");
+    let mut df = read_csv(FILE_PATH).expect("Failed to read CSV");
     let text_inputs = extract_text_inputs(&df).expect("Failed to extract Text_Input column");
+    println!("Text inputs: {:?}", text_inputs);
 
     // Create a vector of futures for the API calls
     let futures: Vec<_> = text_inputs.into_iter().map(|text_input| {
@@ -58,5 +60,5 @@ async fn main() {
     let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
 
     // Add the results to the new column and write to the output CSV
-    add_column_and_write_csv(&mut df, "Cancer_Detected", results, "output.csv").expect("Failed to write CSV");
+    add_column_and_write_csv(&mut df, "Cancer_Detected", results, OUTPUT_PATH).expect("Failed to write CSV");
 }

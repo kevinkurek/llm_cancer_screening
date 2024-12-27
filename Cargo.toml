@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.12.11", features = ["json"] }
+serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
 dotenv = "0.15"
-httpmock = "0.6"
-serde_json = "1.0"
-polars = { version = "0.23", features = ["csv-file"] }
+httpmock = "0.7.0"
+serde_json = "1.0.134"
+polars = "0.45.1"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
