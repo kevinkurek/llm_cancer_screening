@@ -1,12 +1,10 @@
-// filepath: /Users/kevinkurek/Desktop/github/llm_cancer_screening/src/main.rs
 use dotenv::dotenv;
-use futures::future::join_all;
-use llm_cancer_screening::api::call_api;
-use llm_cancer_screening::mock_server::start_mock_server;
 use llm_cancer_screening::csv_reader::{read_csv, extract_text_inputs, add_column_and_write_csv};
+use llm_cancer_screening::api::create_futures;
+use llm_cancer_screening::mock_server::start_mock_server;
 use std::env;
 use std::sync::Arc;
-use serde_json::Value;
+use futures::future::join_all;
 
 #[tokio::main]
 async fn main() {
@@ -30,36 +28,15 @@ async fn main() {
         (api_url, api_key)
     };
 
-    // wrap api_url and api_key in Arc to share across threads
-    let api_url = Arc::new(api_url);
-    let api_key = Arc::new(api_key);
-
     // Use a relative path for the CSV file
     let mut df = read_csv(FILE_PATH).expect("Failed to read CSV");
     let text_inputs = extract_text_inputs(&df).expect("Failed to extract Text_Input column");
     println!("Text inputs: {:?}", text_inputs);
 
-    // Create a vector of futures for the API calls
-    let futures: Vec<_> = text_inputs.into_iter().map(|text_input| {
-        let api_url = Arc::clone(&api_url);
-        let api_key = Arc::clone(&api_key);
-        let prompt = format!("Is there an indication of cancer in this text? Please answer with one word: True or False. {}", text_input);
-        tokio::spawn(async move {
-            match call_api(&api_url, &api_key, &prompt).await {
-                Ok(response) => {
-                    println!("Response: {}", response);
-                    // Parse the response to extract the "content" value
-                    let response_json: Value = serde_json::from_str(&response).expect("Failed to parse response");
-                    let content = response_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
-                    Some(content)
-                },
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    None
-                },
-            }
-        })
-    }).collect();
+    // Create a vector of futures for the API calls: wrap api_url and api_key in Arc to share across threads
+    let api_url = Arc::new(api_url);
+    let api_key = Arc::new(api_key);
+    let futures = create_futures(api_url, api_key, text_inputs);
 
     // Wait for all futures to complete
     let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
