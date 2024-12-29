@@ -28,10 +28,25 @@ async fn main() {
         (api_url, api_key)
     };
 
-    // Use a relative path for the CSV file
-    let mut df = read_csv(FILE_PATH).expect("Failed to read CSV");
-    let text_inputs = extract_text_inputs(&df).expect("Failed to extract Text_Input column");
-    println!("Text inputs: {:?}", text_inputs);
+    // Handle reading the CSV file
+    let mut df = match read_csv(FILE_PATH) {
+        Ok(df) => df,
+        Err(e) => {
+            eprintln!("Error reading CSV into dataframe: {}", e);
+            return;
+        }
+    };
+    println!("First 5 dataframe values: {}", df.head(Some(5)));
+
+    // Extract the text inputs from the dataframe
+    let text_inputs = match extract_text_inputs(&df) {
+        Ok(text_inputs) => text_inputs,
+        Err(e) => {
+            eprintln!("Error extracting text inputs from dataframe: {}", e);
+            return;
+        }
+    };
+    println!("First 5 Example Text inputs: {:?}", &text_inputs[..5]);
 
     // Create a vector of futures for the API calls: wrap api_url and api_key in Arc to share across threads
     let api_url = Arc::new(api_url);
@@ -42,5 +57,8 @@ async fn main() {
     let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
 
     // Add the results to the new column and write to the output CSV
-    add_column_and_write_csv(&mut df, "Cancer_Detected", results, OUTPUT_PATH).expect("Failed to write CSV");
+    if let Err(e) = add_column_and_write_csv(&mut df, "Cancer_Detected", results, OUTPUT_PATH){
+        eprintln!("Error adding column and writing to CSV: {}", e);
+        return;
+    };
 }
