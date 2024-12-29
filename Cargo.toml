@@ -16,6 +16,3 @@ polars = "0.45.1"
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 criterion = { version = "0.5.1", features = ["async"] }
-
-# [profile.release]
-# debug = true
