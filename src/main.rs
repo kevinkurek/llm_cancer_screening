@@ -13,7 +13,7 @@ async fn main() {
     // define file_path constant
     const FILE_PATH: &str = "tests/data/cancer_10_records.csv";
     const OUTPUT_PATH: &str = "output.csv";
-    let use_mock_server = false; // Set to false to use the real API
+    let use_mock_server = true; // Set to false to use the real API
 
     // Define the API URL and API key
     let (api_url, api_key) = if use_mock_server {
@@ -54,7 +54,10 @@ async fn main() {
     let futures = create_futures(api_url, api_key, text_inputs);
 
     // Wait for all futures to complete
-    let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
+    let results: Vec<Option<String>> = join_all(futures)
+        .await.into_iter()
+        .map(|res| res.expect("Task panicked"))
+        .collect();
 
     // Add the results to the new column and write to the output CSV
     if let Err(e) = add_column_and_write_csv(&mut df, "Cancer_Detected", results, OUTPUT_PATH){
