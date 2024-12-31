@@ -29,6 +29,14 @@ impl DataStorage for CsvStorage {
     async fn write_data(&self, mut params: WriteDataParams) -> Result<(), Box<dyn Error>> {
         let series = Series::new(params.column_name.into(), params.values);
         params.df.with_column(series)?;
+
+        // Drop the "Index" column if it exists
+        let index_column_name = PlSmallStr::from("Index");
+        if params.df.get_column_names().iter().any(|&name| name == &index_column_name) {
+            params.df = params.df.drop("Index")?;
+        }
+
+        // Write the DataFrame to a CSV file
         let file = File::create(&params.output_path)?;
         let _ = CsvWriter::new(file)
             .include_header(true)
