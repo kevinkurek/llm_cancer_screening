@@ -67,14 +67,29 @@ pub async fn create_futures(api_url: Arc<String>, api_key: Arc<String>, text_inp
 
 pub async fn create_futures_general<S: DataStorage + Send + Sync + 'static>(
     storage: Arc<S>,
+    api_url: Arc<String>,
+    api_key: Arc<String>,
     text_inputs: Vec<String>,
 ) -> Vec<JoinHandle<Option<String>>> {
     text_inputs.into_iter().map(|text_input| {
         let storage = Arc::clone(&storage);
+        let api_url = Arc::clone(&api_url);
+        let api_key = Arc::clone(&api_key);
+        let prompt = format!("Is there an indication of cancer in this text? Please answer with one word: True or False. {}", text_input);
         tokio::spawn(async move {
-            // Call the API and process the response
-            // ...
-            Some("response".to_string()) // Replace with actual response processing
+            match call_api(&api_url, &api_key, &prompt).await {
+                Ok(response) => {
+                    println!("Response: {}", response);
+                    // Parse the response to extract the "content" value
+                    let response_json: Value = serde_json::from_str(&response).expect("Failed to parse response");
+                    let content = response_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+                    Some(content)
+                },
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    None
+                },
+            }
         })
     }).collect()
 }

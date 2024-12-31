@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use llm_cancer_screening::csv_reader::CsvStorage;
 use llm_cancer_screening::db::DbStorage;
-use llm_cancer_screening::storage::DataStorage;
+use llm_cancer_screening::storage::{DataStorage, WriteDataParams};
 use llm_cancer_screening::api::create_futures;
 use llm_cancer_screening::mock_server::start_mock_server;
 use std::env;
@@ -40,19 +40,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read data
     let df = storage.read_data().await?;
-    let text_inputs = extract_text_inputs(&df)?;
+    let text_inputs: ! = extract_text_inputs(&df)?;
 
     // Create a vector of futures for the API calls
-    let futures = create_futures(storage, text_inputs).await;
+    let futures = create_futures_general(&storage, text_inputs).await;
 
     // Wait for all futures to complete
-    let results: Vec<Option<String>> = join_all(futures).await
-                                        .into_iter()
-                                        .map(|res| res.unwrap())
-                                        .collect();
+    let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
 
     // Write data
-    storage.write_data(&df).await?;
+    let params = WriteDataParams {
+        df,
+        column_name: "Cancer_Detected".to_string(),
+        values: results,
+        output_path: OUTPUT_PATH.to_string(),
+    };
+    storage.write_data(params).await?;
 
     Ok(())
 }
