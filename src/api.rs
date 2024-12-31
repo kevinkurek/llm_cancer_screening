@@ -5,6 +5,7 @@ use std::error::Error;
 use std::sync::Arc;
 use serde_json::Value;
 use tokio::task::JoinHandle;
+use crate::storage::DataStorage;
 
 #[derive(Serialize)]
 struct Message {
@@ -41,7 +42,7 @@ pub async fn call_api(api_url: &str, api_key: &str, prompt: &str) -> Result<Stri
     Ok(response_text)
 }
 
-pub fn create_futures(api_url: Arc<String>, api_key: Arc<String>, text_inputs: Vec<String>) -> Vec<JoinHandle<Option<String>>> {
+pub async fn create_futures(api_url: Arc<String>, api_key: Arc<String>, text_inputs: Vec<String>) -> Vec<JoinHandle<Option<String>>> {
     text_inputs.into_iter().map(|text_input| {
         let api_url = Arc::clone(&api_url);
         let api_key = Arc::clone(&api_key);
@@ -60,6 +61,20 @@ pub fn create_futures(api_url: Arc<String>, api_key: Arc<String>, text_inputs: V
                     None
                 },
             }
+        })
+    }).collect()
+}
+
+pub async fn create_futures_general<S: DataStorage + Send + Sync + 'static>(
+    storage: Arc<S>,
+    text_inputs: Vec<String>,
+) -> Vec<JoinHandle<Option<String>>> {
+    text_inputs.into_iter().map(|text_input| {
+        let storage = Arc::clone(&storage);
+        tokio::spawn(async move {
+            // Call the API and process the response
+            // ...
+            Some("response".to_string()) // Replace with actual response processing
         })
     }).collect()
 }

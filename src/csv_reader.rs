@@ -1,5 +1,46 @@
 use polars::prelude::*;
 use std::fs::File;
+use std::io::{BufReader, BufWriter};
+use async_trait::async_trait;
+use crate::storage::DataStorage;
+use std::error::Error;
+
+pub struct CsvStorage {
+    file_path: String,
+    output_path: String,
+}
+
+impl CsvStorage {
+    pub fn new(file_path: &str, output_path: &str) -> Self {
+        Self {
+            file_path: file_path.to_string(),
+            output_path: output_path.to_string(),
+        }
+    }
+}
+
+#[async_trait]
+impl DataStorage for CsvStorage {
+    async fn read_data(&self) -> Result<DataFrame, Box<dyn Error>> {
+        let file = File::open(&self.file_path)?;
+        let reader = BufReader::new(file);
+        let df = CsvReadOptions::default()
+        .with_has_header(true)
+        .try_into_reader_with_file_path(Some(file_path.into()))?
+        .finish()?;
+        Ok(df)
+    }
+
+    async fn write_data(&self, df: &DataFrame) -> Result<(), Box<dyn Error>> {
+        let file = File::create(&self.output_path)?;
+        let writer = BufWriter::new(file);
+        CsvWriter::new(file)
+            .include_header(true)
+            .finish(df)?;
+        Ok(())
+    }
+}
+
 
 pub fn read_csv(file_path: &str) -> PolarsResult<DataFrame> {
     let df = CsvReadOptions::default()
