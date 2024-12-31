@@ -26,7 +26,7 @@ async fn test_create_futures() {
     ];
 
     // Call create_futures
-    let futures: Vec<JoinHandle<Option<String>>> = create_futures(api_url, api_key, text_inputs);
+    let futures: Vec<JoinHandle<Option<String>>> = create_futures(api_url, api_key, text_inputs).await;
 
     // Await all futures
     let results: Vec<Option<String>> = futures::future::join_all(futures)

@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use llm_cancer_screening::csv_reader::CsvStorage;
+use llm_cancer_screening::csv_storage::{CsvStorage, extract_text_inputs};
 use llm_cancer_screening::db::DbStorage;
 use llm_cancer_screening::storage::{DataStorage, WriteDataParams};
 use llm_cancer_screening::api::create_futures;
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     const FILE_PATH: &str = "tests/data/cancer_10_records.csv";
     const OUTPUT_PATH: &str = "output.csv";
     let use_mock_server = false; // Set to false to use the real API
-    let use_database = true; // Set to true to use the database
+    let use_database = false; // Set to true to use the database
 
     // Define the API URL and API key
     let (api_url, api_key) = if use_mock_server {
@@ -35,18 +35,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let storage: Arc<dyn DataStorage + Send + Sync> = if use_database {
         Arc::new(DbStorage::new("your_database_connection_string"))
     } else {
-        Arc::new(CsvStorage::new(FILE_PATH, OUTPUT_PATH))
+        Arc::new(CsvStorage::new(FILE_PATH))
     };
 
     // Read data
     let df = storage.read_data().await?;
-    let text_inputs: ! = extract_text_inputs(&df)?;
+    let text_inputs = extract_text_inputs(&df)?;
 
     // Create a vector of futures for the API calls
-    let futures = create_futures_general(&storage, text_inputs).await;
+    let api_url = Arc::new(api_url);
+    let api_key = Arc::new(api_key);
+    let futures = create_futures(api_url, api_key, text_inputs).await;
 
     // Wait for all futures to complete
-    let results: Vec<Option<String>> = join_all(futures).await.into_iter().map(|res| res.unwrap()).collect();
+    let results: Vec<Option<String>> = join_all(futures)
+                                        .await
+                                        .into_iter()
+                                        .map(|res| res.unwrap()).collect();
 
     // Write data
     let params = WriteDataParams {

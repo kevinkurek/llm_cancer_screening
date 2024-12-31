@@ -1,13 +1,14 @@
 use async_trait::async_trait;
 use polars::prelude::*;
 use tokio_postgres::{Client, NoTls};
-use crate::storage::DataStorage;
+use crate::storage::{DataStorage, WriteDataParams};
 use std::error::Error;
 
 pub struct DbStorage {
     connection_string: String,
 }
 
+#[allow(dead_code)]
 impl DbStorage {
     pub fn new(connection_string: &str) -> Self {
         Self {
@@ -26,20 +27,15 @@ impl DbStorage {
     }
 }
 
+#[allow(unreachable_code)]
+#[allow(unused_variables)]
 #[async_trait]
 impl DataStorage for DbStorage {
-    async fn read_data(&self) -> Result<DataFrame, Box<dyn Error>> {
-        let client = self.get_client().await?;
-        let rows = client.query("SELECT * FROM your_table", &[]).await?;
-        // Convert rows to DataFrame
-        // ...
-        Ok(DataFrame::default()) // Replace with actual DataFrame conversion
+    async fn read_data(&self) -> Result<DataFrame, Box<dyn std::error::Error>> {
+        !todo!("Implement the read_data method for DbStorage")
     }
 
-    async fn write_data(&self, df: &DataFrame) -> Result<(), Box<dyn Error>> {
-        let client = self.get_client().await?;
-        // Write DataFrame to database
-        // ...
-        Ok(())
+    async fn write_data(&self, params: WriteDataParams) -> Result<(), Box<dyn std::error::Error>> {
+        !todo!("Implement the write_data method for DbStorage")
     }
 }
