@@ -34,8 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Select the appropriate storage backend
     let storage: Arc<dyn DataStorage + Send + Sync> = if use_database {
-        let database_url = env::var("DATABASE_URL")?;
-        println!("Using database: {}", database_url);
+        let database_url = env::var("DATABASE_URL").expect("No DATABASE_URL env var");
         let mut db_storage = DbStorage::new(&database_url);
         db_storage.connect().await?;
         db_storage.initialize().await?;
@@ -45,8 +44,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Read data
-    // let df = storage.read_data().await?;
-    // let text_inputs = extract_text_inputs(&df)?;
+    let df = storage.read_data().await?;
+    let text_inputs = extract_text_inputs(&df)?;
 
     // // Create a vector of futures for the API calls
     // let api_url = Arc::new(api_url);

@@ -20,6 +20,10 @@ impl DbStorage {
     }
 
     pub async fn connect(&mut self) -> Result<(), Box<dyn Error>> {
+        // Print a message to indicate that we are connecting to the database
+        println!("Connecting to database: {}", self.connection_string);
+        
+        // Create a connection pool
         let pool = SqlitePoolOptions::new()
             .max_connections(5)
             .connect(&self.connection_string)
@@ -51,7 +55,7 @@ impl DataStorage for DbStorage {
             for i in 0..params.df.height() {
                 let column1: &str = params.df.column("Text_Input")?.str()?.get(i).unwrap();
                 let column2: &str = params.df.column("Cancer_Detected")?.str()?.get(i).unwrap();
-                let sql_path = Path::new("./src/sql/initialize.sql");
+                let sql_path = Path::new("./src/sql/write_data.sql");
                 let sql = fs::read_to_string(sql_path)?;
                 sqlx::query(&sql)
                     .bind(column1)
