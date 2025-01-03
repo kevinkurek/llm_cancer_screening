@@ -48,24 +48,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let text_inputs = extract_text_inputs(&df)?;
 
     // // Create a vector of futures for the API calls
-    // let api_url = Arc::new(api_url);
-    // let api_key = Arc::new(api_key);
-    // let futures = create_futures(api_url, api_key, text_inputs).await;
+    let api_url = Arc::new(api_url);
+    let api_key = Arc::new(api_key);
+    let futures = create_futures(api_url, api_key, text_inputs).await;
 
-    // // Wait for all futures to complete
-    // let results: Vec<Option<String>> = join_all(futures)
-    //                                     .await
-    //                                     .into_iter()
-    //                                     .map(|res| res.unwrap()).collect();
+    // Wait for all futures to complete
+    let results: Vec<Option<String>> = join_all(futures)
+                                        .await
+                                        .into_iter()
+                                        .map(|res| res.unwrap()).collect();
 
-    // // Write data
-    // let params = WriteDataParams {
-    //     df,
-    //     column_name: "Cancer_Detected".to_string(),
-    //     values: results,
-    //     output_path: OUTPUT_PATH.to_string(),
-    // };
-    // storage.write_data(params).await?;
+    // Write data
+    let params = WriteDataParams {
+        df,
+        column_name: "Cancer_Detected".to_string(),
+        values: results,
+        output_path: OUTPUT_PATH.to_string(),
+    };
+    storage.write_data(params).await?;
 
     Ok(())
 }

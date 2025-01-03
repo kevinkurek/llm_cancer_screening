@@ -1,1 +1,0 @@
-INSERT INTO responses (column1, column2) VALUES (?, ?);
