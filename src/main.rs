@@ -4,7 +4,6 @@ use llm_cancer_screening::db::DbStorage;
 use llm_cancer_screening::storage::{DataStorage, WriteDataParams};
 use llm_cancer_screening::api::create_futures;
 use llm_cancer_screening::mock_server::start_mock_server;
-use sqlx::database;
 use std::env;
 use std::sync::Arc;
 use futures::future::join_all;
