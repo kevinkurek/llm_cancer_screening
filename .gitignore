@@ -1,3 +1,4 @@
 /target
 .env
 *.xlsx
+.DS_Store

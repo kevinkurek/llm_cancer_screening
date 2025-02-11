@@ -55,7 +55,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let results: Vec<Option<String>> = join_all(futures)
                                         .await
                                         .into_iter()
-                                        .map(|res| res.unwrap()).collect();
+                                        .map(|res| res.unwrap())
+                                        .collect();
 
     // Write data
     let params = WriteDataParams {

@@ -13,5 +13,4 @@ pub struct WriteDataParams {
     pub column_name: String,
     pub values: Vec<Option<String>>,
     pub output_path: String,
-    // Add additional fields as needed
 }
