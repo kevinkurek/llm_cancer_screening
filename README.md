@@ -56,7 +56,7 @@ cargo run
 
 ## **Why Rust?**
 
-* Python is my first love but it can be unsafe during during dtype inference and mutability. I choose Rust because it's a very safe language for something as serious as cancer detection, as well as how it watches out for you due to it's ownership capabilities. I decided against C++ because Rust automatically avoids dangling references and memory leaks so why deal with that noise if you can get the same speed & concurrency without managing that overhead. For modern C++ where smart-pointers take care of that same hassle I still chose Rust for it's ease of use if someone else picks up this project and extends it. For the healthcare providers reading this the analogy.
+* Python is my first love but it can be unsafe during during dtype inference and mutability. I choose Rust because it's a very safe language for something as serious as cancer detection, as well as how it watches out for you due to it's ownership capabilities. I decided against C++ because Rust automatically avoids dangling references and memory leaks so why deal with that noise if you can get the same speed & concurrency without managing that overhead. For modern C++ where smart-pointers take care of that same hassle I still chose Rust for it's ease of use if someone else picks up this project and extends it.
 
 ## **Healthcare Provider Analogy**
 
